@@ -6,7 +6,7 @@ const navLinks = [
   { label: 'Contact', href: '#contact' },
 ]
 
-const Navbar = ({ menuOpen, setMenuOpen, scrolled }) => {
+const Navbar = ({ menuOpen, setMenuOpen, scrolled, user, onLoginClick, onLogout }) => {
   return (
     <header
       className={`fixed inset-x-0 top-0 z-50 transition-all duration-300 ${
@@ -32,12 +32,28 @@ const Navbar = ({ menuOpen, setMenuOpen, scrolled }) => {
         </div>
 
         <div className='flex items-center gap-3'>
-          <a
-            href='#contact'
-            className='hidden rounded-full bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white transition hover:-translate-y-0.5 hover:bg-orange-500 md:inline-flex'
-          >
-            Login / Sign In
-          </a>
+          {user ? (
+            <div className='hidden items-center gap-3 md:flex'>
+              <div className='rounded-full bg-slate-900 px-3 py-2 text-xs font-semibold text-white'>
+                {user.username} · {user.role}
+              </div>
+              <button
+                type='button'
+                onClick={onLogout}
+                className='rounded-full border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-800 transition hover:border-orange-400 hover:text-orange-500'
+              >
+                Logout
+              </button>
+            </div>
+          ) : (
+            <button
+              type='button'
+              onClick={onLoginClick}
+              className='hidden rounded-full bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white transition hover:-translate-y-0.5 hover:bg-orange-500 md:inline-flex'
+            >
+              Login / Sign In
+            </button>
+          )}
 
           <button
             type='button'
@@ -67,13 +83,32 @@ const Navbar = ({ menuOpen, setMenuOpen, scrolled }) => {
                 {link.label}
               </a>
             ))}
-            <a
-              href='#contact'
-              className='mt-2 rounded-full bg-slate-900 px-4 py-2.5 text-center text-sm font-semibold text-white transition hover:bg-orange-500'
-              onClick={() => setMenuOpen(false)}
-            >
-              Login / Sign In
-            </a>
+
+            {user ? (
+              <>
+                <div className='rounded-xl bg-slate-900 px-3 py-2 text-sm font-medium text-white'>
+                  {user.username} · {user.role}
+                </div>
+                <button
+                  type='button'
+                  onClick={onLogout}
+                  className='mt-2 rounded-full border border-slate-300 bg-white px-4 py-2.5 text-center text-sm font-semibold text-slate-800 transition hover:border-orange-400 hover:text-orange-500'
+                >
+                  Logout
+                </button>
+              </>
+            ) : (
+              <button
+                type='button'
+                onClick={() => {
+                  setMenuOpen(false)
+                  onLoginClick()
+                }}
+                className='mt-2 rounded-full bg-slate-900 px-4 py-2.5 text-center text-sm font-semibold text-white transition hover:bg-orange-500'
+              >
+                Login / Sign In
+              </button>
+            )}
           </div>
         </div>
       </div>

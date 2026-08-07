@@ -1,13 +1,27 @@
 {
   "name": "backend",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "Restaurant Billing & Management System backend with MongoDB and Mongoose",
+  "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "node server.js",
+    "start": "node server.js",
+    "seed": "node seed.js",
+    "test": "echo \"No tests configured yet\""
   },
-  "keywords": [],
+  "keywords": [
+    "restaurant",
+    "pos",
+    "mongodb",
+    "mongoose"
+  ],
   "author": "",
   "license": "ISC",
-  "type": "module"
+  "type": "module",
+  "dependencies": {
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "mongoose": "^9.9.1"
+  }
 }
