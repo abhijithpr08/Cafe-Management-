@@ -4,19 +4,21 @@ import Sidebar from './Sidebar'
 import {
   BillingPage,
   DashboardOverviewPage,
-  EmployeeManagementPage,
-  InventoryPage,
   KitchenOrdersPage,
   OrderManagementPage,
   OrderStatusUpdatesPage,
   OrdersPage,
   PaymentsPage,
-  ReportsPage,
-  SettingsPage,
   TableManagementPage,
   UserManagementPage,
   KOTPage,
 } from './RolePages'
+import { CustomersPage, ReportsAnalyticsPage } from './CustomersReportsPages'
+import {
+  EmployeeHubPage,
+  InventoryHubPage,
+  SettingsConfigPage,
+} from './SettingsInventoryEmployeePages'
 import { getMenuItemsForRole, hasAccess } from '../../data/rolePermissions'
 import { useAuth } from '../../context/AuthContext'
 
@@ -43,11 +45,12 @@ const DashboardShell = () => {
     if (path === '/dashboard') return <DashboardOverviewPage />
     if (path === '/dashboard/billing') return <BillingPage />
     if (path === '/dashboard/orders') return <OrdersPage />
-    if (path === '/dashboard/inventory') return <InventoryPage />
-    if (path === '/dashboard/reports') return <ReportsPage />
-    if (path === '/dashboard/employee-management') return <EmployeeManagementPage />
+    if (path === '/dashboard/inventory') return <InventoryHubPage />
+    if (path === '/dashboard/customers') return <CustomersPage />
+    if (path === '/dashboard/reports') return <ReportsAnalyticsPage />
+    if (path === '/dashboard/employee-management') return <EmployeeHubPage />
     if (path === '/dashboard/kitchen-orders') return <KitchenOrdersPage />
-    if (path === '/dashboard/settings') return <SettingsPage />
+    if (path === '/dashboard/settings') return <SettingsConfigPage />
     if (path === '/dashboard/user-management') return <UserManagementPage />
     if (path === '/dashboard/payments') return <PaymentsPage />
     if (path === '/dashboard/order-management') return <OrderManagementPage />

@@ -8,6 +8,8 @@ import AboutSection from './components/AboutSection'
 import Footer from './components/Footer'
 import LoginModal from './components/LoginModal/LoginModal'
 import DashboardShell from './components/Dashboard/DashboardShell'
+import LandingMenuSection from './components/Menu/LandingMenuSection'
+import CustomerOrderPage from './components/CustomerOrder/CustomerOrderPage'
 import { useAuth } from './context/AuthContext'
 
 const LandingPage = () => {
@@ -75,6 +77,7 @@ const LandingPage = () => {
         <main id='home'>
           <HeroSection />
           <FeaturesSection />
+          <LandingMenuSection />
           <PricingSection />
           <AboutSection />
         </main>
@@ -110,6 +113,7 @@ const App = () => {
   return (
     <Routes>
       <Route path='/' element={<LandingPage />} />
+      <Route path='/order' element={<CustomerOrderPage />} />
       <Route path='/dashboard/*' element={<ProtectedDashboard />} />
       <Route path='*' element={<Navigate to='/' replace />} />
     </Routes>

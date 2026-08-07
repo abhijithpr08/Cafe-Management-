@@ -1,5 +1,6 @@
 const navLinks = [
   { label: 'Home', href: '#home' },
+  { label: 'Menu', href: '#menu' },
   { label: 'Features', href: '#features' },
   { label: 'Pricing', href: '#pricing' },
   { label: 'About', href: '#about' },

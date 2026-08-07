@@ -122,7 +122,7 @@ export const getMenu = async (req, res) => {
 
 export const createMenuItem = async (req, res) => {
   try {
-    const { name, category, price, veg, available, description } = req.body
+    const { name, category, price, veg, available, description, image } = req.body
 
     if (!name || !category || !price) {
       return res.status(400).json({ message: 'Name, category and price are required.' })
@@ -140,6 +140,7 @@ export const createMenuItem = async (req, res) => {
       veg: veg ?? true,
       available: available ?? true,
       description: description || '',
+      image: image || '',
     })
 
     res.status(201).json(item)
@@ -211,22 +212,84 @@ export const getOrders = async (req, res) => {
 
 export const createOrder = async (req, res) => {
   try {
-    const { orderId, table, items, status, total, waiter } = req.body
-
-    if (!orderId || !table || !items || !waiter) {
-      return res.status(400).json({ message: 'Order ID, table, items, and waiter are required.' })
-    }
-
-    const order = await Order.create({
+    const {
       orderId,
       table,
       items,
-      status: status || 'Preparing',
-      total: total || 0,
+      status,
+      total,
       waiter,
+      customerMobile,
+      orderSource,
+      orderType,
+      customerName,
+      customerPhone,
+      customerAddress,
+      complimentaryReason,
+      subtotal,
+      tax,
+      discountApplied,
+      mergedTables,
+    } = req.body
+
+    if (!orderId || !items?.length) {
+      return res.status(400).json({ message: 'Order ID and items are required.' })
+    }
+
+    const type = orderType || 'Dine-in'
+    if (type === 'Dine-in' && !table) {
+      return res.status(400).json({ message: 'Table is required for dine-in orders.' })
+    }
+    if ((type === 'Takeaway' || type === 'Delivery') && !customerPhone && !customerMobile) {
+      return res.status(400).json({ message: 'Customer phone is required for takeaway/delivery.' })
+    }
+    if (type === 'Delivery' && !customerAddress) {
+      return res.status(400).json({ message: 'Address is required for delivery orders.' })
+    }
+    if (type === 'Complimentary' && !complimentaryReason) {
+      return res.status(400).json({ message: 'Complimentary reason is required.' })
+    }
+
+    const finalTotal = type === 'Complimentary' ? 0 : total || 0
+
+    const order = await Order.create({
+      orderId,
+      table: table || (type === 'Takeaway' ? 'TAKEAWAY' : type === 'Delivery' ? 'DELIVERY' : type === 'Complimentary' ? 'COMP' : ''),
+      items,
+      status: status || 'Preparing',
+      total: finalTotal,
+      subtotal: subtotal ?? finalTotal,
+      tax,
+      discountApplied,
+      waiter: waiter || 'Staff',
+      customerMobile: customerMobile || customerPhone || '',
+      customerName: customerName || '',
+      customerPhone: customerPhone || customerMobile || '',
+      customerAddress: customerAddress || '',
+      complimentaryReason: complimentaryReason || '',
+      orderType: type,
+      orderSource: orderSource || 'POS',
+      paymentStatus: type === 'Complimentary' ? 'Paid' : 'Pending',
+      paymentDetails: type === 'Complimentary' ? [{ method: 'Complimentary', amount: 0 }] : [],
+      mergedTables: mergedTables || [],
     })
 
-    await Table.updateOne({ tableNumber: table }, { status: 'Occupied' })
+    if (table && type === 'Dine-in') {
+      await Table.updateOne({ tableNumber: table }, { status: 'Occupied', activeOrderId: orderId })
+    }
+    if (mergedTables?.length) {
+      await Table.updateMany(
+        { tableNumber: { $in: mergedTables } },
+        { status: 'Occupied', activeOrderId: orderId, mergedWith: mergedTables }
+      )
+    }
+
+    await Notification.create({
+      type: 'Order Status',
+      message: `New ${type} order ${order.orderId} — Preparing`,
+      read: false,
+    })
+
     res.status(201).json(order)
   } catch (error) {
     res.status(500).json({ message: 'Failed to create order', error: error.message })
@@ -235,20 +298,40 @@ export const createOrder = async (req, res) => {
 
 export const updateOrder = async (req, res) => {
   try {
-    const order = await Order.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true })
-    if (!order) {
+    const prev = await Order.findById(req.params.id)
+    if (!prev) {
       return res.status(404).json({ message: 'Order not found' })
     }
 
-    if (req.body.status && ['Completed', 'Served', 'Ready', 'Preparing'].includes(req.body.status)) {
-      const statusMap = {
-        Completed: 'Available',
-        Served: 'Occupied',
-        Ready: 'Occupied',
-        Preparing: 'Occupied',
-      }
+    const order = await Order.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true })
 
-      await Table.updateOne({ tableNumber: order.table }, { status: statusMap[req.body.status] || 'Occupied' })
+    if (req.body.status && req.body.status !== prev.status) {
+      await Notification.create({
+        type: 'Order Status',
+        message: `Order ${order.orderId} status: ${prev.status} → ${order.status}`,
+        read: false,
+      })
+
+      if (['Completed', 'Served', 'Ready', 'Preparing', 'Cancelled'].includes(req.body.status)) {
+        const statusMap = {
+          Completed: 'Available',
+          Cancelled: 'Available',
+          Served: 'Occupied',
+          Ready: 'Occupied',
+          Preparing: 'Occupied',
+        }
+        if (order.table && !['TAKEAWAY', 'DELIVERY', 'COMP'].includes(order.table)) {
+          await Table.updateOne(
+            { tableNumber: order.table },
+            {
+              status: statusMap[req.body.status] || 'Occupied',
+              ...(req.body.status === 'Completed' || req.body.status === 'Cancelled'
+                ? { activeOrderId: '', mergedWith: [] }
+                : {}),
+            }
+          )
+        }
+      }
     }
 
     res.json(order)
@@ -285,6 +368,14 @@ export const updateInventory = async (req, res) => {
     const item = await Inventory.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true })
     if (!item) {
       return res.status(404).json({ message: 'Inventory item not found' })
+    }
+
+    if (item.quantity < item.reorderLevel) {
+      await Notification.create({
+        type: 'Low Stock',
+        message: `${item.itemName} is low (${item.quantity} ${item.unit}). Reorder level: ${item.reorderLevel}.`,
+        read: false,
+      })
     }
 
     res.json(item)
@@ -421,25 +512,56 @@ export const markNotificationRead = async (req, res) => {
 
 export const getReports = async (req, res) => {
   try {
+    const rangeDays = Number(req.query.days) || 7
     const todayStart = new Date()
     todayStart.setHours(0, 0, 0, 0)
 
-    const [todaySales, totalOrders, activeTables, lowStock, salesByDate, topItems, tableRevenue] = await Promise.all([
+    const weekStart = new Date()
+    weekStart.setDate(weekStart.getDate() - 7)
+    weekStart.setHours(0, 0, 0, 0)
+
+    const monthStart = new Date()
+    monthStart.setDate(1)
+    monthStart.setHours(0, 0, 0, 0)
+
+    const rangeStart = new Date()
+    rangeStart.setDate(rangeStart.getDate() - (rangeDays - 1))
+    rangeStart.setHours(0, 0, 0, 0)
+
+    const paidMatch = { paymentStatus: 'Paid', status: { $ne: 'Cancelled' } }
+
+    const [
+      todaySales,
+      weekSales,
+      monthSales,
+      totalOrders,
+      activeTables,
+      lowStock,
+      salesByDate,
+      topItems,
+      tableRevenue,
+      peakHours,
+      gstSummary,
+      paymentMethods,
+      avgOrder,
+    ] = await Promise.all([
       Order.aggregate([
-        { $match: { createdAt: { $gte: todayStart } } },
+        { $match: { ...paidMatch, createdAt: { $gte: todayStart } } },
         { $group: { _id: null, total: { $sum: '$total' }, count: { $sum: 1 } } },
       ]),
-      Order.countDocuments(),
+      Order.aggregate([
+        { $match: { ...paidMatch, createdAt: { $gte: weekStart } } },
+        { $group: { _id: null, total: { $sum: '$total' }, count: { $sum: 1 } } },
+      ]),
+      Order.aggregate([
+        { $match: { ...paidMatch, createdAt: { $gte: monthStart } } },
+        { $group: { _id: null, total: { $sum: '$total' }, count: { $sum: 1 } } },
+      ]),
+      Order.countDocuments({ status: { $ne: 'Cancelled' } }),
       Table.countDocuments({ status: { $ne: 'Available' } }),
       Inventory.find({ $expr: { $lt: ['$quantity', '$reorderLevel'] } }),
       Order.aggregate([
-        {
-          $match: {
-            createdAt: {
-              $gte: new Date(Date.now() - 6 * 24 * 60 * 60 * 1000),
-            },
-          },
-        },
+        { $match: { ...paidMatch, createdAt: { $gte: rangeStart } } },
         {
           $group: {
             _id: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt' } },
@@ -450,29 +572,74 @@ export const getReports = async (req, res) => {
         { $sort: { _id: 1 } },
       ]),
       Order.aggregate([
+        { $match: { status: { $ne: 'Cancelled' } } },
         { $unwind: '$items' },
         { $group: { _id: '$items.name', totalQty: { $sum: '$items.qty' } } },
         { $sort: { totalQty: -1 } },
-        { $limit: 10 },
+        { $limit: 5 },
       ]),
       Order.aggregate([
+        { $match: paidMatch },
         { $group: { _id: '$table', total: { $sum: '$total' }, count: { $sum: 1 } } },
         { $sort: { total: -1 } },
+      ]),
+      Order.aggregate([
+        { $match: { status: { $ne: 'Cancelled' } } },
+        { $group: { _id: { $hour: '$createdAt' }, count: { $sum: 1 } } },
+        { $sort: { _id: 1 } },
+      ]),
+      Order.aggregate([
+        { $match: paidMatch },
+        {
+          $group: {
+            _id: null,
+            cgst: { $sum: { $ifNull: ['$tax.cgst', 0] } },
+            sgst: { $sum: { $ifNull: ['$tax.sgst', 0] } },
+            taxTotal: { $sum: { $ifNull: ['$tax.total', 0] } },
+          },
+        },
+      ]),
+      Order.aggregate([
+        { $match: paidMatch },
+        { $unwind: { path: '$paymentDetails', preserveNullAndEmptyArrays: true } },
+        {
+          $group: {
+            _id: { $ifNull: ['$paymentDetails.method', 'Unspecified'] },
+            amount: { $sum: { $ifNull: ['$paymentDetails.amount', 0] } },
+            count: { $sum: 1 },
+          },
+        },
+        { $sort: { amount: -1 } },
+      ]),
+      Order.aggregate([
+        { $match: paidMatch },
+        { $group: { _id: null, avg: { $avg: '$total' }, count: { $sum: 1 } } },
       ]),
     ])
 
     const summary = {
       todaySales: todaySales[0]?.total || 0,
-      totalOrders: totalOrders,
-      activeTables: activeTables,
+      todayOrders: todaySales[0]?.count || 0,
+      weeklyRevenue: weekSales[0]?.total || 0,
+      monthlyRevenue: monthSales[0]?.total || 0,
+      totalOrders,
+      averageOrderValue: Math.round((avgOrder[0]?.avg || 0) * 100) / 100,
+      activeTables,
       lowStockAlerts: lowStock.length,
+      gstCollected: gstSummary[0]?.taxTotal || 0,
+      cgstCollected: gstSummary[0]?.cgst || 0,
+      sgstCollected: gstSummary[0]?.sgst || 0,
     }
 
     res.json({
       summary,
-      salesByDate: salesByDate,
+      salesByDate,
       topItems,
       tableRevenue,
+      peakHours: peakHours.map((h) => ({ hour: h._id, count: h.count, label: `${h._id}:00` })),
+      paymentMethods,
+      lowStockItems: lowStock,
+      rangeDays,
     })
   } catch (error) {
     res.status(500).json({ message: 'Failed to generate reports', error: error.message })

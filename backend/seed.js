@@ -38,16 +38,16 @@ const categories = [
 ]
 
 const menuItems = [
-  { name: 'Paneer Tikka', category: 'Starters', price: 220, veg: true, available: true, description: 'Grilled cottage cheese with spices' },
-  { name: 'Chicken 65', category: 'Starters', price: 260, veg: false, available: true, description: 'Spicy deep-fried chicken' },
-  { name: 'Butter Chicken', category: 'Main Course', price: 320, veg: false, available: true, description: 'Creamy tomato-based chicken curry' },
-  { name: 'Dal Makhani', category: 'Main Course', price: 240, veg: true, available: true, description: 'Slow-cooked black lentils' },
-  { name: 'Hyderabadi Chicken Biryani', category: 'Biryani', price: 280, veg: false, available: true, description: 'Aromatic spiced rice with chicken' },
-  { name: 'Veg Fried Rice', category: 'Chinese', price: 180, veg: true, available: true, description: 'Stir-fried rice with vegetables' },
-  { name: 'Tandoori Roti', category: 'Breads', price: 30, veg: true, available: true, description: 'Whole wheat clay-oven bread' },
-  { name: 'Masala Dosa', category: 'South Indian', price: 120, veg: true, available: true, description: 'Crispy rice crepe with potato filling' },
-  { name: 'Gulab Jamun', category: 'Desserts', price: 90, veg: true, available: true, description: 'Sweet milk-solid dumplings in syrup' },
-  { name: 'Cold Coffee', category: 'Beverages', price: 110, veg: true, available: true, description: 'Chilled blended coffee' },
+  { name: 'Paneer Tikka', category: 'Starters', price: 220, veg: true, available: true, description: 'Grilled cottage cheese marinated in spiced yogurt.', image: 'https://images.unsplash.com/photo-1567337710282-00832b415979?w=400' },
+  { name: 'Chicken 65', category: 'Starters', price: 260, veg: false, available: true, description: 'Spicy deep-fried chicken tossed in curry leaves.', image: 'https://images.unsplash.com/photo-1601050690597-df0568f70950?w=400' },
+  { name: 'Butter Chicken', category: 'Main Course', price: 320, veg: false, available: true, description: 'Creamy tomato-based curry with tender chicken.', image: 'https://images.unsplash.com/photo-1603894584373-5ac82b2ae398?w=400' },
+  { name: 'Dal Makhani', category: 'Main Course', price: 240, veg: true, available: true, description: 'Slow-cooked black lentils in butter and cream.', image: 'https://images.unsplash.com/photo-1585937421612-70a008356fbe?w=400' },
+  { name: 'Hyderabadi Chicken Biryani', category: 'Biryani', price: 280, veg: false, available: true, description: 'Aromatic basmati rice layered with spiced chicken.', image: 'https://images.unsplash.com/photo-1563379091339-03246963d96c?w=400' },
+  { name: 'Veg Fried Rice', category: 'Chinese', price: 180, veg: true, available: true, description: 'Wok-tossed rice with fresh vegetables.', image: 'https://images.unsplash.com/photo-1603133872878-684f208fb84b?w=400' },
+  { name: 'Tandoori Roti', category: 'Breads', price: 30, veg: true, available: true, description: 'Whole wheat bread baked in a clay oven.', image: 'https://images.unsplash.com/photo-1633945274405-b6c8069047b0?w=400' },
+  { name: 'Masala Dosa', category: 'South Indian', price: 120, veg: true, available: true, description: 'Crispy rice crepe filled with spiced potato masala.', image: 'https://images.unsplash.com/photo-1630383249896-24c322ff2ad9?w=400' },
+  { name: 'Gulab Jamun', category: 'Desserts', price: 90, veg: true, available: true, description: 'Soft milk-solid dumplings soaked in sugar syrup.', image: 'https://images.unsplash.com/photo-1601303516534-bf0b2fdda9c8?w=400' },
+  { name: 'Cold Coffee', category: 'Beverages', price: 110, veg: true, available: true, description: 'Chilled blended coffee topped with ice cream.', image: 'https://images.unsplash.com/photo-1461023058943-07fcbe16d735?w=400' },
 ]
 
 const tables = [
