@@ -158,16 +158,51 @@ const MenuSection = ({
 
   // Scroll-in fade animation for cards
   useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) entry.target.classList.add('is-visible')
-        })
-      },
-      { threshold: 0.1 }
-    )
-    document.querySelectorAll('.menu-card').forEach((el) => observer.observe(el))
-    return () => observer.disconnect()
+    const cards = Array.from(document.querySelectorAll('.menu-card'))
+    const revealElement = (element) => {
+      if (element) element.classList.add('is-visible')
+    }
+
+    const revealVisibleCards = () => {
+      const viewportHeight = window.innerHeight || document.documentElement.clientHeight || 0
+      cards.forEach((card) => {
+        const rect = card.getBoundingClientRect()
+        const isInViewport = rect.top < viewportHeight * 1.2 && rect.bottom > 0
+        if (isInViewport) revealElement(card)
+      })
+    }
+
+    let observer = null
+    let fallbackTimeout = null
+
+    if ('IntersectionObserver' in window) {
+      observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) revealElement(entry.target)
+          })
+        },
+        {
+          root: null,
+          threshold: 0.1,
+          rootMargin: '0px 0px -12% 0px',
+        }
+      )
+
+      cards.forEach((card) => observer.observe(card))
+      revealVisibleCards()
+    } else {
+      cards.forEach(revealElement)
+    }
+
+    fallbackTimeout = window.setTimeout(() => {
+      cards.forEach((card) => revealElement(card))
+    }, 1500)
+
+    return () => {
+      if (observer) observer.disconnect()
+      if (fallbackTimeout) window.clearTimeout(fallbackTimeout)
+    }
   }, [filteredItems, loading])
 
   return (

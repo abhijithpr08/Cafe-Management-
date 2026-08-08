@@ -25,22 +25,51 @@ const LandingPage = () => {
     handleScroll()
     window.addEventListener('scroll', handleScroll)
 
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            entry.target.classList.add('is-visible')
-          }
-        })
-      },
-      { threshold: 0.15 }
-    )
+    const elements = Array.from(document.querySelectorAll('.fade-in-section'))
+    const revealElement = (element) => {
+      if (element) element.classList.add('is-visible')
+    }
 
-    document.querySelectorAll('.fade-in-section').forEach((element) => observer.observe(element))
+    const revealVisibleElements = () => {
+      const viewportHeight = window.innerHeight || document.documentElement.clientHeight || 0
+      elements.forEach((element) => {
+        const rect = element.getBoundingClientRect()
+        const isInViewport = rect.top < viewportHeight * 1.2 && rect.bottom > 0
+        if (isInViewport) revealElement(element)
+      })
+    }
+
+    let observer = null
+    let fallbackTimeout = null
+
+    if ('IntersectionObserver' in window) {
+      observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) revealElement(entry.target)
+          })
+        },
+        {
+          root: null,
+          threshold: 0.1,
+          rootMargin: '0px 0px -12% 0px',
+        }
+      )
+
+      elements.forEach((element) => observer.observe(element))
+      revealVisibleElements()
+    } else {
+      elements.forEach(revealElement)
+    }
+
+    fallbackTimeout = window.setTimeout(() => {
+      elements.forEach((element) => revealElement(element))
+    }, 1500)
 
     return () => {
       window.removeEventListener('scroll', handleScroll)
-      observer.disconnect()
+      if (observer) observer.disconnect()
+      if (fallbackTimeout) window.clearTimeout(fallbackTimeout)
     }
   }, [])
 
