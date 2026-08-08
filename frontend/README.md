@@ -1,16 +1,167 @@
-# React + Vite
+# Cafe Management System
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+A full-stack café and restaurant management application with a modern React frontend and an Express + MongoDB backend. It includes dashboard-based operations for orders, inventory, employee management, reports, and customer-facing menu ordering.
 
-Currently, two official plugins are available:
+## Overview
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+This project is organized as a monorepo:
 
-## React Compiler
+- Frontend: React + Vite + Tailwind-inspired styling
+- Backend: Node.js + Express + MongoDB/Mongoose
+- Features: POS workflow, dashboard analytics, customer ordering, inventory tracking, and role-based access
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Tech Stack
 
-## Expanding the Oxlint configuration
+### Frontend
+- React 19
+- Vite
+- React Router
+- Axios
+- Recharts
+- jsPDF
+- XLSX
+- QR Code support
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and Oxlint's TypeScript related rules in your project.
+### Backend
+- Node.js
+- Express 5
+- MongoDB + Mongoose
+- CORS
+- Dotenv
+
+## Features
+
+- Restaurant dashboard with role-based views
+- Staff and employee management
+- Inventory and stock tracking
+- Menu and category management
+- Order processing and billing flow
+- Customer ordering experience and OTP-based access flow
+- Reporting and analytics
+- PDF and Excel export utilities
+- Settings and configuration controls
+
+## Project Structure
+
+```bash
+.
+├── backend/
+│   ├── config/
+│   ├── controllers/
+│   ├── models/
+│   ├── routes/
+│   ├── server.js
+│   ├── seed.js
+│   ├── seed-menu.js
+│   └── package.json
+├── frontend/
+│   ├── src/
+│   ├── public/
+│   ├── index.html
+│   ├── vite.config.js
+│   └── package.json
+└── README.md
+```
+
+## Prerequisites
+
+Before running the app, ensure you have:
+
+- Node.js 18 or newer
+- npm or yarn
+- MongoDB running locally or a valid MongoDB connection string
+
+## Environment Variables
+
+Create a `.env` file in the backend folder with the following values:
+
+```env
+PORT=5000
+MONGODB_URI=mongodb://127.0.0.1:27017/cafe-management
+```
+
+You can also add other environment-specific values if required by your deployment setup.
+
+## Installation
+
+### 1) Install frontend dependencies
+
+```bash
+cd frontend
+npm install
+```
+
+### 2) Install backend dependencies
+
+```bash
+cd ../backend
+npm install
+```
+
+## Running the Application
+
+### Start the backend
+
+```bash
+cd backend
+npm run dev
+```
+
+The backend runs on:
+
+```text
+http://localhost:5000
+```
+
+### Start the frontend
+
+```bash
+cd frontend
+npm run dev
+```
+
+The frontend runs on:
+
+```text
+http://localhost:5173
+```
+
+## Available Scripts
+
+### Frontend
+
+```bash
+npm run dev      # start Vite dev server
+npm run build    # production build
+npm run preview  # preview production build
+npm run lint     # run lint checks
+```
+
+### Backend
+
+```bash
+npm run dev      # start express server
+npm run start    # run server in production mode
+npm run seed     # seed database data
+npm run seed:menu # seed menu data
+```
+
+## Seed Data
+
+The backend includes database seed scripts for initial data population.
+
+```bash
+cd backend
+npm run seed
+npm run seed:menu
+```
+
+## Notes
+
+- The app is designed for local development and can be extended for production deployment.
+- A MongoDB connection must be available before starting the backend.
+- The frontend expects the backend API to be accessible at the configured server URL.
+
+## License
+
+This project is currently configured with the default ISC license in the backend package.
