@@ -1,7 +1,7 @@
 import axios from 'axios'
 
 const apiClient = axios.create({
-  baseURL: 'http://localhost:5000/api',
+  baseURL: 'https://cafe-management-go4c.onrender.com/api',
   timeout: 10000,
 })
 
